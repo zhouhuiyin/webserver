@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+    <!--
+        <h>标签,分为<h1>-<h6>.用于表示标题,标题独占一行.
+        <center>标签,HTML5中已经不建议使用的,作用是将包含在该标签中的内容
+                居中显示
+        <input>标签,输入域.其中使用type属性指定其展现的样子,比较常见的有:
+               type="text" 文本框
+               type="password" 密码框
+               type="button" 按钮
+               type="submit" 提交按钮
+        <a>标签,超链接.其中属性href用于指定点击后调转的地址
+
+        <img>标签,图片.其中属性src用于指定图片的位置
+
+        当我们需要在页面上加载一个资源时,通常要指定该资源的位置,使得浏览器可以
+        根据该位置去下载该资源进行使用.
+        而指定位置时有两种常见的路径方式可用:
+        "./":当前目录,这是一个相对目录,这里的"./"指定的位置和在java代码中指定
+             的位置并不相同,因为这个是浏览器理解的.
+             浏览器理解"./"的实际位置是根据请求当前页面时地址栏中的路径决定的.
+             比如请求当前index.html页面时,我们在地址栏上输入的路径为:
+             http://localhost:8088/myweb/index.html
+             那么,浏览器理解该页面上的"./"位置就是该页面所在目录,即:
+             http://localhost:8088/myweb/
+             所以,以图片为例src="./logo.png",浏览器理解的实际位置为:
+             http://localhost:8088/myweb/logo.png
+
+        "/":绝对路径.这是忽略协议名称和主机地址信息的绝对路径写法,相当于
+            仅指定URL的抽象路径部分,其余与上次请求的部分一致.
+            例如:
+            请求当前index.html页面时浏览器地址栏路径:
+            http://localhost:8088/myweb/index.html
+
+            在该页面上的图片指定的路径<img src="/myweb/logo.png">
+            那么浏览器则认为他的实际路径为:
+            http://localhost:8088/myweb/logo.png
+            | 忽略不写与上次请求一致|--绝对路径部分-|
+    -->
+<center>
+    <h1>百度</h1>
+    <input type="text" size="32">
+    <input type="button" value="百度一下" onclick="alert('别乱点')">
+    <br>
+    <a href="http://www.taobao.com">淘宝</a>
+    <table border="1">
+        <tr>
+            <td>1,1</td>
+            <td colspan="2">1,2</td>
+        </tr>
+        <tr>
+            <td>2,1</td>
+            <td rowspan="2">2,2</td>
+            <td>2,3</td>
+        </tr>
+        <tr>
+            <td>3,1</td>
+            <td>3,3</td>
+        </tr>
+    </table>
+</center>
+
+</body>
+</html>
