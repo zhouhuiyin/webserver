@@ -19,8 +19,5 @@
         <module name="V5" />
       </profile>
     </annotationProcessing>
-    <bytecodeTargetLevel>
-      <module name="WebServer" target="1.8" />
-    </bytecodeTargetLevel>
   </component>
 </project>
