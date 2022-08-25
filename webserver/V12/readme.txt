@@ -1,0 +1,8 @@
+此版本在DispatcherServlet中实现根据用户请求的资源的后缀来设置响应头
+Content-Type的值.
+目前先支持6个类型实现功能.6个类型参照http.txt文件最后.
+
+实现:
+1:在DispatcherServlet中定义一个Map,保存资源后缀名与对应的类型头信息
+2:截取用户请求的资源的后缀名并作为key提取对应的头信息
+3:设置响应头Content-Type的值
