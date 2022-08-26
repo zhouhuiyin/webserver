@@ -20,10 +20,10 @@ public class HttpServletRequest {
     private String method;//请求方式
     private String uri;//抽象路径
     private String protocol;//协议版本
-
-    private String requestURI;//记录uri中“？”左侧请求部分
-    private String queryString;//记录uri中"？"右边部分
+    private String requestURI;//记录uri中"?"左侧的请求部分
+    private String queryString;//记录uri中"?"右侧的参数部分
     private Map<String,String> parameters = new HashMap<>();//记录每一组参数
+
     //消息相关信息
     private Map<String,String> headers = new HashMap<>();
 
@@ -47,17 +47,46 @@ public class HttpServletRequest {
         String[] data = line.split("\\s");
         method = data[0];
         uri = data[1];
-        parseUri(uri);//进一步解析uri
+        parseUri();//进一步解析uri
         protocol = data[2];
         System.out.println("method:"+method);
         System.out.println("uri:"+uri);
         System.out.println("protocol:"+protocol);
     }
 
-    /**
-     * 进一步解析uri
-     */
-    private void parseUri(String uri){
+    private void parseUri(){
+                /*
+            uri有两种情况:
+            1:含参数的
+              例如:
+                  |请求部分 |?|                   参数部分                          |
+              uri:/myweb/reg?username=zhangsan&password=123456&nickname=asan&age=22
+              将uri按照"?"拆分为请求部分与参数部分,将请求部分赋值给requestURI
+              将参数部分赋值给queryString
+              再将参数部分进行拆分,首先按照"&"拆分出每一组参数,每组参数再按照
+              "="拆分为参数名与参数值,并将参数名作为key,参数值作为value保存到
+              parameters这个Map中
+            2:不含参数的
+              例如:
+              uri:/root/404.png
+              直接将uri的值赋值给requestURI即可
+         */
+        String[] data = uri.split("\\?");
+        requestURI = data[0];
+        if(data.length>1){
+            queryString = data[1];
+            //拆分出每一组参数
+            //[username=zhangsan, password=123456, ...]
+            String[] paraArr = queryString.split("&");
+            for(String para: paraArr){
+                String[] paras = para.split("=");
+                if(paras.length>1){
+                    parameters.put(paras[0],paras[1]);
+                }else {
+                    parameters.put(paras[0],null);
+                }
+            }
+        }
 
     }
     private void parseHeaders() throws IOException {
