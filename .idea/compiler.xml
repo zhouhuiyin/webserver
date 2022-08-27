@@ -19,11 +19,15 @@
         <module name="V1" />
         <module name="V15" />
         <module name="V2" />
+        <module name="V18" />
         <module name="V3" />
         <module name="V17" />
         <module name="V4" />
         <module name="V5" />
       </profile>
     </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="WebServer" target="1.8" />
+    </bytecodeTargetLevel>
   </component>
 </project>
