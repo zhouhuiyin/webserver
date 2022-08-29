@@ -22,6 +22,7 @@ public class HttpServletRequest {
     private String method;//请求方式
     private String uri;//抽象路径
     private String protocol;//协议版本
+
     private String requestURI;//记录uri中"?"左侧的请求部分
     private String queryString;//记录uri中"?"右侧的参数部分
     private Map<String,String> parameters = new HashMap<>();//记录每一组参数
@@ -34,21 +35,20 @@ public class HttpServletRequest {
 
     public HttpServletRequest(Socket socket) throws IOException, EmptyRequestException {
         this.socket = socket;
-        //1.解析请求
+        //1解析请求行
         parseRequestLine();
         //2解析消息头
         parseHeaders();
-        //3解析正文
+        //3解析消息正文
         parseContent();
-
     }
 
     private void parseRequestLine() throws IOException, EmptyRequestException {
         String line = readLine();
-        if(line.isEmpty()){//若请求的请求是空字符串说明本次为空请求
+        if(line.isEmpty()){//若请求的请求行是空字符串说明说本次为空请求
             throw new EmptyRequestException();
         }
-        System.out.println("请求行："+line);
+        System.out.println("请求行:"+line);
         String[] data = line.split("\\s");
         method = data[0];
         uri = data[1];
@@ -59,29 +59,15 @@ public class HttpServletRequest {
         System.out.println("protocol:"+protocol);
     }
 
+    /**
+     * 进一步解析uri
+     */
     private void parseUri(){
-                /*
-            uri有两种情况:
-            1:含参数的
-              例如:
-                  |请求部分 |?|                   参数部分                          |
-              uri:/myweb/reg?username=zhangsan&password=123456&nickname=asan&age=22
-              将uri按照"?"拆分为请求部分与参数部分,将请求部分赋值给requestURI
-              将参数部分赋值给queryString
-              再将参数部分进行拆分,首先按照"&"拆分出每一组参数,每组参数再按照
-              "="拆分为参数名与参数值,并将参数名作为key,参数值作为value保存到
-              parameters这个Map中
-            2:不含参数的
-              例如:
-              uri:/root/404.png
-              直接将uri的值赋值给requestURI即可
-         */
         String[] data = uri.split("\\?");
         requestURI = data[0];
-        if(data.length>1){
+        if(data.length>1){//含有参数
             queryString = data[1];
             //拆分出每一组参数
-            //[username=zhangsan, password=123456, ...]
             parseParameters(queryString);
         }
         System.out.println("requestURI:"+requestURI);
@@ -89,33 +75,40 @@ public class HttpServletRequest {
         System.out.println("parameters:"+parameters);
     }
 
+    /**
+     * 拆分参数初始化parameters这个Map
+     * @param line 参数格式应当是:参数名1=参数值1&参数名2=参数值2&...
+     */
     private void parseParameters(String line){
         String[] paraArr = line.split("&");
-        for(String para: paraArr){
+        for(String para : paraArr){//遍历数组拆分每一个参数的参数名和参数值
+            //[username, zhangsan]
             String[] paras = para.split("=");
-            if(paras.length>1){
-                parameters.put(paras[0],paras[1]);
-            }else {
-                parameters.put(paras[0],null);
+            if(paras.length>1) {
+                parameters.put(paras[0], paras[1]);
+            }else{
+                parameters.put(paras[0], null);
             }
         }
     }
+
+
     private void parseHeaders() throws IOException {
-        while (true){
+        while(true) {
             String line = readLine();
             if(line.isEmpty()){//如果读取的是空字符串说明单独读取了CRLF
                 break;
             }
             //Connection: keep-alive
-            System.out.println("消息头："+line);
+            System.out.println("消息头:" + line);
             String[] data = line.split(":\\s");
-            headers.put(data[0],data[1] );
+            headers.put(data[0],data[1]);
         }
-        System.out.println("headers:"+ headers);
+        System.out.println("headers:"+headers);
     }
-
     private void parseContent() throws IOException {
-        //获取消息头Content-length
+        //获取消息头Content-Length
+        System.out.println(headers.containsKey("Content-Length"));
         if(headers.containsKey("Content-Length")){//判断是否有该头信息
             //获取正文长度
             int len = Integer.parseInt(headers.get("Content-Length"));
@@ -124,26 +117,31 @@ public class HttpServletRequest {
             InputStream in = socket.getInputStream();
             in.read(contentData);//一次性块读所有正文数据
 
-            //根据消息头Content—Type
+            //根据消息头Content-Type确定正文类型以便分支处理
+            System.out.println(headers.containsKey("Content-Type"));
             if(headers.containsKey("Content-Type")){
                 String contentType = headers.get("Content-Type");
+                //分支判断不同类型进行不同处理
                 if("application/x-www-form-urlencoded".equals(contentType)){
-                    //当前正文数据就是原get请求提交表单时抽象路径中?右侧的字符串（参数部分）
+                    //当前正文数据就是原GET请求提交表单时抽象路径中"?"右侧的字符串(参数部分)
                     String line = new String(contentData,"ISO8859-1");
-                    System.out.println("正文内容"+ line);
+                    System.out.println("正文内容:"+line);
                     parseParameters(line);
                 }
             }
         }
 
+
+
     }
+
     private String readLine() throws IOException {
         InputStream in = socket.getInputStream();
         StringBuilder builder = new StringBuilder();
         char cur = 'a';//保存本次读取到的字符
         char pre = 'a';//保存上次读取到的字符
         int d;
-        while((d = in.read()) !=-1){
+        while((d = in.read())!=-1){
             cur = (char)d;//本次读取到的字符
             if(pre==13 && cur==10){//判断是否连续读取到了回车+换行
                 break;
@@ -153,7 +151,6 @@ public class HttpServletRequest {
         }
         return builder.toString().trim();
     }
-
 
     public String getMethod() {
         return method;
@@ -167,7 +164,7 @@ public class HttpServletRequest {
         return protocol;
     }
 
-    public String getHeader(String name){
+    public String getHeader(String name) {
         return headers.get(name);
     }
 
@@ -179,13 +176,18 @@ public class HttpServletRequest {
         return queryString;
     }
 
+    /**
+     * 根据参数名获取参数值
+     * @param name
+     * @return
+     */
     public String getParameter(String name){
         String value = parameters.get(name);
         if(value!=null){
             try {
                 value = URLDecoder.decode(value,"UTF-8");
             } catch (UnsupportedEncodingException e) {
-                throw new RuntimeException(e);
+                e.printStackTrace();
             }
         }
         return value;

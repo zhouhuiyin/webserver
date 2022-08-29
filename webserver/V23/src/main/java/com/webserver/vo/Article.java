@@ -3,7 +3,8 @@ package com.webserver.vo;
 import java.io.Serializable;
 
 public class Article implements Serializable {
-    public static final long serialVersionUID = 2L;
+    public static final long serialVersionUID = 1L;
+
     private String title;
     private String author;
     private String content;

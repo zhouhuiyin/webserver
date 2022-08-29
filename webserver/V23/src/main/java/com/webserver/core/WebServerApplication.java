@@ -19,26 +19,27 @@ public class WebServerApplication {
     private ServerSocket serverSocket;
 
     public WebServerApplication(){
-        try{
-            System.out.println("正在启动服务端。。。");
+        try {
+            System.out.println("正在启动服务端...");
             serverSocket = new ServerSocket(8088);
-            System.out.println("服务端启动完毕！");
-        }catch (IOException e){
+            System.out.println("服务端启动完毕!");
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
+
     public void start(){
-        try{
-            while (true){
-            System.out.println("等待客户连接。。。");
-            Socket socket = serverSocket.accept();
-            System.out.println("一个客户连接了！！");
-            //启动一个线程处理客户端交互
-            ClientHandler clientHandler = new ClientHandler(socket);
-            Thread t = new Thread(clientHandler);
-            t.start();
+        try {
+            while(true) {
+                System.out.println("等待客户端连接...");
+                Socket socket = serverSocket.accept();
+                System.out.println("一个客户端连接了!");
+                //启动一个线程处理该客户端交互
+                ClientHandler clientHandler = new ClientHandler(socket);
+                Thread t = new Thread(clientHandler);
+                t.start();
             }
-        }catch (IOException e){
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }

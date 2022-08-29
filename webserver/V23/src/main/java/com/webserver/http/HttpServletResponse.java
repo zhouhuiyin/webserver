@@ -17,29 +17,30 @@ import java.util.Set;
 public class HttpServletResponse {
     //状态行相关信息
     private int statusCode = 200;
-    private String statusReason = "ok";
+    private String statusReason = "OK";
+
     //响应头相关信息
     private Map<String,String> headers = new HashMap<>();
 
-    //响应头相关信息
-
-
     //响应正文相关信息
     private File entity;//响应正文对应的实体文件
+
     //用来响应动态数据作为正文使用
     private byte[] contentData;//响应正文对应的一组字节
-    /**
-     * java.io.ByteArrayOutputStream
-     * 是一个低级流，其内部维护一个字节数组，通过这个流写出的数据全部会保存到
-     * 内部的这个字节数组中。
+    /*
+        java.io.ByteArrayOutputStream
+        是一个低级流,其内部维护一个字节数组,通过这个流写出的数据全部会保存
+        到内部的这个字节数组中.
      */
-    private ByteArrayOutputStream  baos;
+    private ByteArrayOutputStream baos;
 
     private Socket socket;
 
     public HttpServletResponse(Socket socket){
         this.socket = socket;
     }
+
+
     public void response() throws IOException {
         sendBefore();
         //3.1发送状态行
@@ -48,45 +49,59 @@ public class HttpServletResponse {
         sendHeaders();
         //3.3发送响应正文
         sendContent();
+        System.out.println("响应发送完毕");
     }
 
     /**
      * 发送响应前的准备工作
      */
     private void sendBefore(){
-        //1若baos不为null，说明向该输出流中写出了一组动态数据要作为正文，因此，要将该流中的这组字节获取到作为正文
+        /*
+            1若baos不为null,说明向该输出流中写出了一组动态数据要作为正文
+            因此,要将该流中的这组字节获取到作为正文
+         */
         if(baos!=null){
             contentData = baos.toByteArray();
-            //自动添加响应头Content—Length
-            addHeader("Content-Length",String.valueOf(contentData.length));
+            //自动添加响应头Content-Length
+            addHeader("Content-Length",
+                      String.valueOf(contentData.length));
         }
 
-
     }
+
+
+    /**
+     * 发送状态行
+     */
     private void sendStatusLine() throws IOException {
         String line = "HTTP/1.1"+" "+statusCode+" "+statusReason;
         println(line);
     }
-
+    /**
+     * 发送响应头
+     */
     private void sendHeaders() throws IOException {
-        Set<Map.Entry<String,String>> entrySet =headers.entrySet();
+        Set<Map.Entry<String,String>> entrySet = headers.entrySet();
         for(Map.Entry<String,String> e : entrySet){
             String key = e.getKey();
             String value = e.getValue();
-            String line = key +": " +value;
+            String line = key+": "+value;
             println(line);
         }
+
         //单独发送CRLF表示响应头部分发送完毕
         println("");
     }
-
+    /**
+     * 发送响应正文
+     */
     private void sendContent() throws IOException {
         OutputStream out = socket.getOutputStream();
         if(contentData!=null){
             out.write(contentData);
-        }else if (entity != null) {
-            try (
-                    FileInputStream fis = new FileInputStream(entity);
+        }else if(entity!=null) {
+            try(
+                FileInputStream fis = new FileInputStream(entity);
             ) {
                 int len;
                 byte[] buf = new byte[1024 * 10];
@@ -94,14 +109,11 @@ public class HttpServletResponse {
                     out.write(buf, 0, len);
                 }
             }
-
         }
-
     }
 
-
     /**
-     * 发送响应头
+     * 发送一行字符串
      * @param line
      */
     private void println(String line) throws IOException {
@@ -111,6 +123,7 @@ public class HttpServletResponse {
         out.write(13);//发送一个回车符
         out.write(10);//发送一个换行符
     }
+
 
     public int getStatusCode() {
         return statusCode;
@@ -133,15 +146,22 @@ public class HttpServletResponse {
     }
 
     public void setEntity(File entity) {
-        String fileName = entity.getName();
+        this.entity = entity;
+
+        String fileName = entity.getName();//获取文件名
+        //根据文件名截取后缀名
         String ext = fileName.substring(fileName.lastIndexOf(".")+1);
-        String type = HttpContext.getMineType(ext);
-        //添加两个响应头Content-Type 和Content-Length
+        String type = HttpContext.getMimeType(ext);//根据后缀名获取类型
+        //添加两个响应头Content-Type和Content-Length
         addHeader("Content-Type",type);
         addHeader("Content-Length",String.valueOf(entity.length()));
-        this.entity = entity;
     }
 
+    /**
+     * 添加一个要发送的响应头
+     * @param name
+     * @param value
+     */
     public void addHeader(String name,String value){
         this.headers.put(name,value);
     }
@@ -151,22 +171,22 @@ public class HttpServletResponse {
      * @return
      */
     public PrintWriter getWriter(){
-       return new PrintWriter(
-               new BufferedWriter(
-                       new OutputStreamWriter(
-                               getOutputStream(), StandardCharsets.UTF_8
-                       )
-               ),true
-       );
+        return new PrintWriter(
+                new BufferedWriter(
+                        new OutputStreamWriter(
+                                getOutputStream(), StandardCharsets.UTF_8
+                        )
+                ),true
+        );
     }
 
     /**
-     * 通过返回的字节输出流写出的字节会被作为响应正文发送给客户端
+     * 通过返回的字节数出流写出的字节会被作为响应正文发送给客户端
      * @return
      */
     public OutputStream getOutputStream(){
         if(baos==null){
-            baos = new ByteArrayOutputStream ();
+            baos = new ByteArrayOutputStream();
         }
         return baos;
     }
@@ -175,4 +195,3 @@ public class HttpServletResponse {
         addHeader("Content-Type",type);
     }
 }
-
