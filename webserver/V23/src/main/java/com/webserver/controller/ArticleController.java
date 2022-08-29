@@ -16,7 +16,7 @@ public class ArticleController {
     private static File articleDir;
 
     static {
-        articleDir = new File("./articles");
+        articleDir = new File("./webserver/articles");
         if (!articleDir.exists()) {
             articleDir.mkdirs();
         }

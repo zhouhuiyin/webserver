@@ -56,11 +56,11 @@ public class DispatcherServlet {
             controller.showAllArticle(request,response);
         }else {
             //将./webapps/myweb/index.html响应给浏览器
-            File file = new File("./webapps" + path);
+            File file = new File("./webserver/webapps" + path);
             if (file.isFile()) {//如果定位是文件
                 response.setEntity(file);
             } else {//不是文件(要么不存在,要么是目录,404情况)
-                file = new File("./webapps/root/404.html");
+                file = new File("./webserver/webapps/root/404.html");
                 response.setStatusCode(404);
                 response.setStatusReason("NotFound");
                 response.setEntity(file);
