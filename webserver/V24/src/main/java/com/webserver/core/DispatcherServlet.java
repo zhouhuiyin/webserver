@@ -1,12 +1,18 @@
 package com.webserver.core;
 
+import com.webserver.annotation.Controller;
+import com.webserver.annotation.RequestMapping;
 import com.webserver.controller.ArticleController;
+import com.webserver.controller.ToolsController;
 import com.webserver.controller.UserController;
 import com.webserver.http.HttpContext;
 import com.webserver.http.HttpServletRequest;
 import com.webserver.http.HttpServletResponse;
 
 import java.io.File;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -35,36 +41,46 @@ public class DispatcherServlet {
     }
 
 
-    public void service(HttpServletRequest request, HttpServletResponse response){
+    public void service(HttpServletRequest request, HttpServletResponse response) throws URISyntaxException, ClassNotFoundException, InstantiationException, IllegalAccessException, InvocationTargetException {
         String path = request.getRequestURI();
-
-        if("/myweb/reg".equals(path)){
-            //处理用户注册
-            UserController controller = new UserController();
-            controller.reg(request,response);
-        }else if("/myweb/login".equals(path)){
-            UserController controller = new UserController();
-            controller.login(request,response);
-        }else if("/myweb/showAllUser".equals(path)){
-            UserController controller = new UserController();
-            controller.showAllUser(request, response);
-        }else if("/myweb/writeArticle".equals(path)){
-            ArticleController controller = new ArticleController();
-            controller.writeArticle(request,response);
-        }else if("/myweb/showAllArticle".equals(path)){
-            ArticleController controller = new ArticleController();
-            controller.showAllArticle(request,response);
-        }else {
-            //将./webapps/myweb/index.html响应给浏览器
-            File file = new File("./webserver/webapps" + path);
-            if (file.isFile()) {//如果定位是文件
-                response.setEntity(file);
-            } else {//不是文件(要么不存在,要么是目录,404情况)
-                file = new File("./webserver/webapps/root/404.html");
-                response.setStatusCode(404);
-                response.setStatusReason("NotFound");
-                response.setEntity(file);
+        //path=/myweb/reg
+        //处理用户注册
+        File dir = new File(
+                DispatcherServlet.class.getClassLoader().getResource("./com/webserver/controller").toURI()
+        );
+        File[] subs = dir.listFiles(f->f.getName().endsWith(".class"));
+        for(File file:subs){
+            String className = file.getName().substring(0,file.getName().indexOf("."));
+            Class cls = Class.forName("com.webserver.controller."+className);
+            //该类是否被注解@Controller标注
+            if(cls.isAnnotationPresent(Controller.class)){
+                //扫描方法
+                Method[] methods = cls.getDeclaredMethods();
+                for(Method method : methods){
+                    //方法是否被注解@RequestMapping
+                    if(method.isAnnotationPresent(RequestMapping.class)){
+                        RequestMapping rm = method.getAnnotation(RequestMapping.class);
+                        String value = rm.value();
+                        if(value.equals(path)){
+                            //实例化这个Controller
+                            Object c = cls.newInstance();
+                            System.out.println(path+"请求被"+cls.getName()+"类的"+method.getName()+"()处理");
+                            method.invoke(c,request,response);
+                            return;
+                        }
+                    }
+                }
             }
+        }
+        //将./webapps/myweb/index.html响应给浏览器
+        File file = new File("./webserver/webapps" + path);
+        if (file.isFile()) {//如果定位是文件
+            response.setEntity(file);
+        } else {//不是文件(要么不存在,要么是目录,404情况)
+            file = new File("./webserver/webapps/root/404.html");
+            response.setStatusCode(404);
+            response.setStatusReason("NotFound");
+            response.setEntity(file);
         }
         response.addHeader("Server","WebServer");
 

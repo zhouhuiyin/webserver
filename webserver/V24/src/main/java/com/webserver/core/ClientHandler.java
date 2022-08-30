@@ -37,11 +37,11 @@ public class ClientHandler implements Runnable{
             response.response();
 
 
-        } catch (IOException e) {
-            e.printStackTrace();
         } catch (EmptyRequestException e) {
             //空请求不需要做任何处理,只是为了忽略上面try中后续处理
-        } finally {
+        } catch (Exception e){
+            e.printStackTrace();
+        }finally {
             try {
                 //响应后断开连接
                 socket.close();

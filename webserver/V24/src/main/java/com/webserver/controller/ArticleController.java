@@ -1,5 +1,7 @@
 package com.webserver.controller;
 
+import com.webserver.annotation.Controller;
+import com.webserver.annotation.RequestMapping;
 import com.webserver.http.HttpServletRequest;
 import com.webserver.http.HttpServletResponse;
 import com.webserver.vo.Article;
@@ -12,6 +14,7 @@ import java.util.List;
 /**
  * 处理与文章相关的业务
  */
+@Controller
 public class ArticleController {
     private static File articleDir;
 
@@ -22,6 +25,7 @@ public class ArticleController {
         }
     }
 
+    @RequestMapping("/myweb/writeArticle")
     public void writeArticle(HttpServletRequest request, HttpServletResponse response) {
         System.out.println("处理发表文章");
         String title = request.getParameter("title");
@@ -57,7 +61,7 @@ public class ArticleController {
 
         System.out.println("发表文章处理完毕");
     }
-
+    @RequestMapping("/myweb/showAllArticle")
     public void showAllArticle(HttpServletRequest request, HttpServletResponse response) {
         System.out.println("生成文章列表");
         //1获取所有文章文件

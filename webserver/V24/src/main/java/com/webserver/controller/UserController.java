@@ -1,5 +1,7 @@
 package com.webserver.controller;
 
+import com.webserver.annotation.Controller;
+import com.webserver.annotation.RequestMapping;
 import com.webserver.http.HttpServletRequest;
 import com.webserver.http.HttpServletResponse;
 import com.webserver.vo.User;
@@ -11,6 +13,7 @@ import java.util.List;
 /**
  * 处理与用户相关的请求操作
  */
+@Controller
 public class UserController {
     //该File对象表示用于表示所有用户信息保存的目录
     private static File userDir;
@@ -25,6 +28,7 @@ public class UserController {
     /**
      * 处理用户登陆操作
      */
+    @RequestMapping("/myweb/login")
     public void login(HttpServletRequest request, HttpServletResponse response) {
         System.out.println("开始处理登陆...");
         String username = request.getParameter("username");
@@ -66,6 +70,7 @@ public class UserController {
     /**
      * 处理用户注册操作的请求
      */
+    @RequestMapping("/myweb/reg")
     public void reg(HttpServletRequest request, HttpServletResponse response) {
         System.out.println("开始处理注册...");
         //1获取用户在注册页面上表单中提交上来的注册信息
@@ -132,6 +137,7 @@ public class UserController {
      * @param request
      * @param response
      */
+    @RequestMapping("/myweb/showAllUser")
     public void showAllUser(HttpServletRequest request, HttpServletResponse response) {
         System.out.println("开始生成动态页面");
         //1读取users目录中的所有用户信息
